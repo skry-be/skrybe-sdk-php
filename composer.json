@@ -1,7 +1,9 @@
 {
     "name": "skrybe/sdk-php",
     "description": "PHP SDK for Skrybe Email Newsletter Service",
-    "type": "library",    "require": {
+    "type": "library",
+    "license": "MIT",
+    "require": {
         "php": ">=7.4",
         "guzzlehttp/guzzle": "^7.0",
         "psr/log": "^3.0"
