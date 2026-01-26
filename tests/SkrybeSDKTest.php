@@ -122,4 +122,96 @@ class SkrybeSDKTest extends TestCase
         $this->assertTrue($result['success']);
         $this->assertEquals('789', $result['subscriber_id']);
     }
+
+    public function testSendTransactionalEmail()
+    {
+        $this->mockHandler->append(
+            new Response(200, [], json_encode([
+                'status' => 'success',
+                'message' => 'Email sent successfully.'
+            ]))
+        );
+
+        $result = $this->sdk->sendTransactionalEmail([
+            'toEmail' => 'user@example.com',
+            'subject' => 'Your one-time passcode',
+            'htmlBody' => '<p>Your code is <strong>384092</strong>. It expires in 5 minutes.</p>',
+            'plainBody' => 'Your code is 384092. It expires in 5 minutes.'
+        ]);
+
+        $this->assertIsArray($result);
+        $this->assertEquals('success', $result['status']);
+        $this->assertEquals('Email sent successfully.', $result['message']);
+    }
+
+    public function testSendTransactionalEmailWithOptionalParams()
+    {
+        $this->mockHandler->append(
+            new Response(200, [], json_encode([
+                'status' => 'success',
+                'message' => 'Email sent successfully.'
+            ]))
+        );
+
+        $result = $this->sdk->sendTransactionalEmail([
+            'toEmail' => 'user@example.com',
+            'subject' => 'Your one-time passcode',
+            'htmlBody' => '<p>Your code is <strong>384092</strong>.</p>',
+            'fromName' => 'Skrybe Security',
+            'fromEmail' => 'no-reply@yourdomain.com',
+            'replyTo' => 'support@yourdomain.com'
+        ]);
+
+        $this->assertIsArray($result);
+        $this->assertEquals('success', $result['status']);
+    }
+
+    public function testSendTransactionalEmailValidationRequiresToEmail()
+    {
+        $this->expectException(\Skrybe\Exception\ValidationException::class);
+
+        $this->sdk->sendTransactionalEmail([
+            'subject' => 'Test Subject',
+            'htmlBody' => '<p>Test</p>'
+        ]);
+    }
+
+    public function testSendTransactionalEmailValidationRequiresSubject()
+    {
+        $this->expectException(\Skrybe\Exception\ValidationException::class);
+
+        $this->sdk->sendTransactionalEmail([
+            'toEmail' => 'user@example.com',
+            'htmlBody' => '<p>Test</p>'
+        ]);
+    }
+
+    public function testSendTransactionalEmailValidationRequiresBody()
+    {
+        $this->expectException(\Skrybe\Exception\ValidationException::class);
+
+        $this->sdk->sendTransactionalEmail([
+            'toEmail' => 'user@example.com',
+            'subject' => 'Test Subject'
+        ]);
+    }
+
+    public function testSendTransactionalEmailAcceptsPlainBodyOnly()
+    {
+        $this->mockHandler->append(
+            new Response(200, [], json_encode([
+                'status' => 'success',
+                'message' => 'Email sent successfully.'
+            ]))
+        );
+
+        $result = $this->sdk->sendTransactionalEmail([
+            'toEmail' => 'user@example.com',
+            'subject' => 'Plain text email',
+            'plainBody' => 'This is a plain text email.'
+        ]);
+
+        $this->assertIsArray($result);
+        $this->assertEquals('success', $result['status']);
+    }
 }

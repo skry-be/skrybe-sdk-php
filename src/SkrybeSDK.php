@@ -62,7 +62,7 @@ class SkrybeSDK
     private function makeRequest(string $endpoint, array $data)
     {
         $this->handleRateLimit();
-        
+
         try {
             $this->getLogger()->info("Making request to {$endpoint}", [
                 'endpoint' => $endpoint,
@@ -92,7 +92,53 @@ class SkrybeSDK
                 'error' => $e->getMessage(),
                 'code' => $e->getCode()
             ]);
-            
+
+            throw new SkrybeException(
+                $e->getMessage(),
+                $e->getCode(),
+                $e
+            );
+        }
+    }
+
+    private function makeJsonRequest(string $endpoint, array $data)
+    {
+        $this->handleRateLimit();
+
+        $payload = array_merge(['api_key' => $this->apiKey], $data);
+        $payload = array_filter($payload, fn($v) => !is_null($v));
+
+        try {
+            $this->getLogger()->info("Making JSON request to {$endpoint}", [
+                'endpoint' => $endpoint,
+                'data' => $payload
+            ]);
+
+            $response = $this->client->post($endpoint, [
+                'headers' => ['Content-Type' => 'application/json'],
+                'json' => $payload
+            ]);
+
+            $body = (string) $response->getBody();
+            $result = json_decode($body, true);
+
+            $this->getLogger()->debug("Response received", [
+                'endpoint' => $endpoint,
+                'response' => $result
+            ]);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return $body;
+            }
+
+            return $result;
+        } catch (RequestException $e) {
+            $this->getLogger()->error("Request failed", [
+                'endpoint' => $endpoint,
+                'error' => $e->getMessage(),
+                'code' => $e->getCode()
+            ]);
+
             throw new SkrybeException(
                 $e->getMessage(),
                 $e->getCode(),
@@ -149,6 +195,44 @@ class SkrybeSDK
         }
     }
 
+    private function validateTransactionalEmailOptions(array $options): void
+    {
+        $errors = [];
+
+        if (!isset($options['toEmail']) || empty($options['toEmail'])) {
+            $errors[] = "Field 'toEmail' is required";
+        } elseif (!filter_var($options['toEmail'], FILTER_VALIDATE_EMAIL)) {
+            $errors[] = "Field 'toEmail' has invalid email format";
+        }
+
+        if (!isset($options['subject']) || empty($options['subject'])) {
+            $errors[] = "Field 'subject' is required";
+        }
+
+        $hasHtmlBody = isset($options['htmlBody']) && !empty($options['htmlBody']);
+        $hasPlainBody = isset($options['plainBody']) && !empty($options['plainBody']);
+
+        if (!$hasHtmlBody && !$hasPlainBody) {
+            $errors[] = "Either 'htmlBody' or 'plainBody' is required";
+        }
+
+        if (isset($options['fromEmail']) && !empty($options['fromEmail'])) {
+            if (!filter_var($options['fromEmail'], FILTER_VALIDATE_EMAIL)) {
+                $errors[] = "Field 'fromEmail' has invalid email format";
+            }
+        }
+
+        if (isset($options['replyTo']) && !empty($options['replyTo'])) {
+            if (!filter_var($options['replyTo'], FILTER_VALIDATE_EMAIL)) {
+                $errors[] = "Field 'replyTo' has invalid email format";
+            }
+        }
+
+        if (!empty($errors)) {
+            throw new ValidationException($errors);
+        }
+    }
+
     public function sendEmail(array $options)
     {
         $this->validateEmailOptions($options);
@@ -168,6 +252,39 @@ class SkrybeSDK
             'track_clicks' => $options['trackClicks'] ?? null,
             'schedule_date_time' => $options['scheduleDateTime'] ?? null,
             'schedule_timezone' => $options['scheduleTimezone'] ?? null,
+        ]);
+    }
+
+    /**
+     * Send a transactional email (OTP, password reset, alerts, etc.)
+     *
+     * Unlike sendEmail(), this method delivers immediately without queuing or scheduling.
+     *
+     * @param array $options {
+     *     @type string $toEmail     Required. The recipient email address (single email only).
+     *     @type string $subject     Required. The email subject.
+     *     @type string $htmlBody    The HTML version of your email. Required unless plainBody is provided.
+     *     @type string $plainBody   The plain text version of your email. Required if htmlBody is omitted.
+     *     @type string $fromName    Optional. Override of the brand's 'From name'.
+     *     @type string $fromEmail   Optional. Override of the brand's 'From email'. Must be on an allowed domain.
+     *     @type string $replyTo     Optional. Override of the brand's 'Reply to' email.
+     * }
+     * @return array The API response
+     * @throws ValidationException If required parameters are missing or invalid
+     * @throws SkrybeException If the API request fails
+     */
+    public function sendTransactionalEmail(array $options)
+    {
+        $this->validateTransactionalEmailOptions($options);
+
+        return $this->makeJsonRequest('/api/emails/send-transactional.php', [
+            'to_email' => $options['toEmail'],
+            'subject' => $options['subject'],
+            'html_body' => $options['htmlBody'] ?? null,
+            'plain_body' => $options['plainBody'] ?? null,
+            'from_name' => $options['fromName'] ?? null,
+            'from_email' => $options['fromEmail'] ?? null,
+            'reply_to' => $options['replyTo'] ?? null,
         ]);
     }
 
