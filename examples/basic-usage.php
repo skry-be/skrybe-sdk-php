@@ -46,9 +46,25 @@ try {
         'page' => 1,
         'limit' => 10
     ]);
-    
+
     echo "\nSubscribers:\n";
     print_r($subscribers);
+
+    // Example 5: Send a transactional email (OTP, password reset, alerts)
+    // Unlike sendEmail(), this delivers immediately without queuing
+    $transactionalResult = $sdk->sendTransactionalEmail([
+        'toEmail' => 'user@example.com',
+        'subject' => 'Your one-time passcode',
+        'htmlBody' => '<p>Your code is <strong>384092</strong>. It expires in 5 minutes.</p>',
+        'plainBody' => 'Your code is 384092. It expires in 5 minutes.',
+        // Optional overrides (uses brand defaults if omitted):
+        // 'fromName' => 'Skrybe Security',
+        // 'fromEmail' => 'no-reply@yourdomain.com',
+        // 'replyTo' => 'support@yourdomain.com'
+    ]);
+
+    echo "\nTransactional email sent!\n";
+    print_r($transactionalResult);
 
 } catch (SkrybeException $e) {
     echo "Error: " . $e->getMessage() . "\n";
