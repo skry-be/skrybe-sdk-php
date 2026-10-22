@@ -18,16 +18,24 @@ class SkrybeSDK
     private $lastRequestTime = 0;
     private const MIN_REQUEST_INTERVAL = 0.1; // 100ms between requests
 
-    public function __construct(string $apiKey, string $baseUrl = self::DEFAULT_BASE_URL)
+    /**
+     * @param callable|null $handler Optional Guzzle handler (e.g. a HandlerStack
+     *                               wrapping a MockHandler in tests).
+     */
+    public function __construct(string $apiKey, string $baseUrl = self::DEFAULT_BASE_URL, ?callable $handler = null)
     {
         $this->apiKey = $apiKey;
-        $this->client = new Client([
+        $config = [
             'base_uri' => $baseUrl,
             'headers' => [
                 'Content-Type' => 'application/x-www-form-urlencoded',
                 'User-Agent' => 'SkrybeSDK-PHP/1.0'
             ]
-        ]);
+        ];
+        if ($handler !== null) {
+            $config['handler'] = $handler;
+        }
+        $this->client = new Client($config);
     }
 
     private function createFormData(array $data): array
@@ -53,7 +61,7 @@ class SkrybeSDK
         $timeSinceLastRequest = $now - $this->lastRequestTime;
         
         if ($timeSinceLastRequest < self::MIN_REQUEST_INTERVAL) {
-            usleep(($this->MIN_REQUEST_INTERVAL - $timeSinceLastRequest) * 1000000);
+            usleep((int) ((self::MIN_REQUEST_INTERVAL - $timeSinceLastRequest) * 1000000));
         }
         
         $this->lastRequestTime = microtime(true);
