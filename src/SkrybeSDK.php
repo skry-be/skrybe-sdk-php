@@ -29,7 +29,7 @@ class SkrybeSDK
             'base_uri' => $baseUrl,
             'headers' => [
                 'Content-Type' => 'application/x-www-form-urlencoded',
-                'User-Agent' => 'SkrybeSDK-PHP/1.0'
+                'User-Agent' => 'SkrybeSDK-PHP/1.1'
             ]
         ];
         if ($handler !== null) {
