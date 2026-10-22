@@ -4,7 +4,8 @@ A PHP SDK for interacting with the Skrybe Email Newsletter Service. This SDK pro
 
 ## Requirements
 
-- PHP 7.4 or higher
+- PHP 8.2.35, 8.3.36, 8.4.27, 8.5.12 or newer within those branches (the
+  2026-10-21 security releases that fix CVE-2026-109618 and CVE-2026-109619)
 - Composer
 - GuzzleHttp 7.0 or higher
 - PSR-3 compatible logger (optional)
