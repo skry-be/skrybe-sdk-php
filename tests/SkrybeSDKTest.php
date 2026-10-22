@@ -2,9 +2,9 @@
 
 namespace Skrybe\Tests;
 
-use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 use Skrybe\SkrybeSDK;
@@ -14,15 +14,23 @@ class SkrybeSDKTest extends TestCase
 {
     private $sdk;
     private $mockHandler;
+    private $history = [];
 
     protected function setUp(): void
     {
+        // MockHandler throws on an unqueued request, so no test can reach the
+        // real API.
         $this->mockHandler = new MockHandler();
         $handlerStack = HandlerStack::create($this->mockHandler);
-        $client = new Client(['handler' => $handlerStack]);
-        
-        $this->sdk = new SkrybeSDK('test-api-key');
-        // TODO: Inject mock client into SDK
+        $this->history = [];
+        $handlerStack->push(Middleware::history($this->history));
+
+        $this->sdk = new SkrybeSDK('test-api-key', 'https://skrybe.test', $handlerStack);
+    }
+
+    private function lastRequest()
+    {
+        return end($this->history)['request'];
     }
 
     public function testSendEmail()
@@ -42,6 +50,14 @@ class SkrybeSDKTest extends TestCase
 
         $this->assertIsArray($result);
         $this->assertTrue($result['success']);
+
+        $request = $this->lastRequest();
+        $this->assertSame('POST', $request->getMethod());
+        $this->assertSame('https://skrybe.test/api/emails/send.php', (string) $request->getUri());
+        parse_str((string) $request->getBody(), $form);
+        $this->assertSame('test-api-key', $form['api_key']);
+        $this->assertSame('Test Subject', $form['subject']);
+        $this->assertSame('["recipient@example.com"]', $form['to']);
     }
 
     public function testCreateCampaign()
@@ -142,6 +158,14 @@ class SkrybeSDKTest extends TestCase
         $this->assertIsArray($result);
         $this->assertEquals('success', $result['status']);
         $this->assertEquals('Email sent successfully.', $result['message']);
+
+        $request = $this->lastRequest();
+        $this->assertSame('/api/emails/send-transactional.php', $request->getUri()->getPath());
+        $this->assertSame('application/json', $request->getHeaderLine('Content-Type'));
+        $payload = json_decode((string) $request->getBody(), true);
+        $this->assertSame('test-api-key', $payload['api_key']);
+        $this->assertSame('user@example.com', $payload['to_email']);
+        $this->assertArrayNotHasKey('from_name', $payload);
     }
 
     public function testSendTransactionalEmailWithOptionalParams()
@@ -164,6 +188,31 @@ class SkrybeSDKTest extends TestCase
 
         $this->assertIsArray($result);
         $this->assertEquals('success', $result['status']);
+    }
+
+    public function testApiErrorIsWrappedInSkrybeException()
+    {
+        $this->mockHandler->append(new Response(401, [], 'Invalid API key'));
+
+        $this->expectException(SkrybeException::class);
+        $this->expectExceptionCode(401);
+
+        $this->sdk->getLists();
+    }
+
+    public function testBackToBackRequestsAreRateLimitedWithoutError()
+    {
+        $this->mockHandler->append(
+            new Response(200, [], json_encode(['lists' => []])),
+            new Response(200, [], json_encode(['lists' => []]))
+        );
+
+        $start = microtime(true);
+        $this->sdk->getLists();
+        $this->sdk->getLists();
+
+        $this->assertCount(2, $this->history);
+        $this->assertGreaterThanOrEqual(0.09, microtime(true) - $start);
     }
 
     public function testSendTransactionalEmailValidationRequiresToEmail()
