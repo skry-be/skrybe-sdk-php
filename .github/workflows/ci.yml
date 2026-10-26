@@ -38,6 +38,8 @@ jobs:
       - name: Syntax check
         run: find src -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Load the client
+        # --no-dev still resolves require-dev, and PHPUnit 12 needs 8.3, so drop it here.
         run: |
-          composer install --no-dev --no-interaction --no-progress
+          composer remove --dev --no-update phpunit/phpunit
+          composer update --no-dev --no-interaction --no-progress
           php -r 'require "vendor/autoload.php"; new Skrybe\Skrybe("k");'
