@@ -14,17 +14,16 @@ A rewrite covering the whole public API, in step with `@skrybe/sdk` 2.0.0 and
 
 ### Added
 - A `Skrybe` client with resources: `emails`, `campaigns`, `lists`,
-  `subscribers`, `templates`, `autoresponders`, `brands`, `sms`, `stats`.
+  `subscribers`, `templates`, `autoresponders`, `brands`, `stats`.
 - Campaigns: `list`/`listAll`, `get`, `stats`, `send` (with `dryRun`),
   `testSend`, `schedule`/`unschedule`, `update`, `duplicate`, `delete`,
   `activity`/`activityAll`.
 - Lists: `get`, `create`, `update`, `delete`, `activeSubscriberCount`, and
   custom fields (`addCustomField`, `renameCustomField`, `deleteCustomField`).
-- Subscribers: `subscribe` (with custom fields and phone), `unsubscribe`,
+- Subscribers: `subscribe` (with custom fields), `unsubscribe`,
   `delete`, `status`, `list`/`listAll`.
 - Templates: `list`, `get`, `create`, `update`, `delete`.
 - Autoresponders: `list`, `get`, `emailStats`, `create`, `createEmail`.
-- SMS: `send` and `get`.
 - `brands->list()` and `stats->totalEmailsSent()`.
 - Typed exceptions under `SkrybeException`: `AuthenticationException`,
   `InvalidRequestException`, `RateLimitException`, `ConnectionException` and

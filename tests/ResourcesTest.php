@@ -355,27 +355,12 @@ class ResourcesTest extends TestCase
         $this->assertSame(['list_id' => 'A1'], $this->sent());
     }
 
-    // ------------------------------------------------ brands, sms and stats
+    // ------------------------------------------------ brands and stats --
 
     public function testBrandsListReadsTheNumberedPayload(): void
     {
         $skrybe = $this->client([self::phpNumberedPayload('brand', [['id' => '86', 'name' => 'Cafe One']])]);
         $this->assertSame([['id' => '86', 'name' => 'Cafe One']], $skrybe->brands->list());
-    }
-
-    public function testSmsSendPostsToMessageAndType(): void
-    {
-        $skrybe = $this->client(['{"id":1,"to":"+2348031234567","status":"sent","segments":1}']);
-        $skrybe->sms->send('0803 123 4567', 'Your code is 1234', 'transactional');
-        $this->assertSame('/api/sms/send.php', $this->path());
-        $this->assertSame(['to' => '0803 123 4567', 'message' => 'Your code is 1234', 'type' => 'transactional'], $this->sent());
-    }
-
-    public function testSmsGetPostsTheId(): void
-    {
-        $skrybe = $this->client(['{"id":12,"status":"delivered"}']);
-        $this->assertSame('delivered', $skrybe->sms->get(12)['status']);
-        $this->assertSame(['id' => '12'], $this->sent());
     }
 
     public function testTotalEmailsSentIsAGetWithoutTheApiKey(): void

@@ -145,16 +145,6 @@ final class Errors
         'consent not given.' => ['consent_not_given', 'invalid_request', "The list requires GDPR consent; pass 'gdpr' => true."],
         'failed recaptcha test.' => ['recaptcha_failed', 'api', 'The list has reCAPTCHA enabled on its subscribe form, which an API call cannot satisfy.'],
 
-        // SMS
-        'phone number not passed' => ['phone_missing', 'invalid_request'],
-        'message not passed' => ['message_missing', 'invalid_request'],
-        'invalid phone number' => ['invalid_phone', 'invalid_request', 'Use a Nigerian mobile number, e.g. 0803 123 4567 or +2348031234567.'],
-        'use a brand api key' => ['brand_key_required', 'invalid_request', 'SMS is charged to a brand. Use an API key from a brand login, not the main account key.'],
-        'sms is not enabled for this brand' => ['sms_not_enabled', 'api', "An admin sets the brand's SMS allowance under brand settings, SMS."],
-        'monthly sms allowance exceeded' => ['quota_exceeded', 'rate_limit', 'The allowance resets on the 1st of the month, Lagos time.'],
-        'message id not passed' => ['message_id_missing', 'invalid_request'],
-        'message does not exist' => ['message_not_found', 'api'],
-
         // Sending
         'unauthorised from email domain' => ['unauthorised_from_domain', 'api', 'The From domain must be verified for this brand, or listed in its allowed domains.'],
     ];
@@ -169,7 +159,6 @@ final class Errors
         '/^account under review:/' => ['account_under_review', 'api', self::UNDER_REVIEW_HINT],
         '/^brand is under review/' => ['account_under_review', 'api', self::UNDER_REVIEW_HINT],
         '/^a field is too long/' => ['field_too_long', 'invalid_request'],
-        '/^message is longer than \d+ sms segments/' => ['message_too_long', 'invalid_request', 'A segment is 160 characters, or 70 with emoji or special characters.'],
         '/^test send rate limit reached/' => ['rate_limited', 'rate_limit', 'Test sends are limited to 20 an hour per brand, shared with the Skrybe dashboard.'],
         '/^domain not verified in ses/' => ['domain_not_verified', 'api', self::DOMAIN_HINT],
         '/^domain ".*" is not verified/' => ['domain_not_verified', 'api', self::DOMAIN_HINT],

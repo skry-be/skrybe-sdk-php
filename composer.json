@@ -1,9 +1,9 @@
 {
     "name": "skrybe/sdk-php",
-    "description": "Official PHP SDK for the Skrybe email and SMS marketing API",
+    "description": "Official PHP SDK for the Skrybe email marketing API",
     "type": "library",
     "license": "MIT",
-    "keywords": ["skrybe", "email", "sms", "marketing", "newsletter", "api", "sdk"],
+    "keywords": ["skrybe", "email", "marketing", "newsletter", "api", "sdk"],
     "homepage": "https://github.com/skry-be/skrybe-sdk-php",
     "support": {
         "issues": "https://github.com/skry-be/skrybe-sdk-php/issues",

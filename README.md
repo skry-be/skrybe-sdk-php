@@ -1,9 +1,9 @@
 # skrybe/sdk-php
 
-The official PHP SDK for the [Skrybe](https://skry.be) email and SMS marketing
-API. It covers every brand-key endpoint: transactional and bulk email, the
-full campaign lifecycle, lists and custom fields, subscribers, templates,
-autoresponders and SMS.
+The official PHP SDK for the [Skrybe](https://skry.be) email marketing API.
+It covers every brand-key endpoint: transactional and bulk email, the full
+campaign lifecycle, lists and custom fields, subscribers, templates and
+autoresponders.
 
 Methods return parsed arrays and throw typed exceptions. The API answers most
 failures with HTTP 200 and a sentence of prose, and the SDK turns those into
@@ -131,7 +131,6 @@ $skrybe->subscribers->subscribe([
     'listId' => $listId,
     'email' => 'ada@example.com',
     'name' => 'Ada',
-    'phone' => '0803 123 4567',
     'fields' => ['Birthday' => '1990-12-10'],
 ]); // 'subscribed' or 'already_subscribed'
 $skrybe->subscribers->status($listId, 'ada@example.com');
@@ -164,16 +163,6 @@ $skrybe->autoresponders->createEmail($ar['id'], [
 $skrybe->autoresponders->list($listId);
 $skrybe->autoresponders->get($ar['id']);      // with its emails under email_list
 $skrybe->autoresponders->emailStats($emailId);
-```
-
-### SMS
-
-Charged to the brand's monthly allowance. SMS needs an install with the SMS
-endpoints deployed.
-
-```php
-$sms = $skrybe->sms->send('0803 123 4567', 'Your code is 1234', 'transactional');
-$skrybe->sms->get($sms['id']); // latest delivery status
 ```
 
 ### Brands and stats

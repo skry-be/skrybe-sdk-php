@@ -8,9 +8,9 @@ use Skrybe\Internal\Transport;
 
 /**
  * Every subscriber is in exactly one of STATUSES; `active` is who a campaign
- * sends to. A subscriber row has email (null for a phone-only contact), phone
- * (E.164), sms_opt_out, name, status, joined_at (Unix seconds) and
- * custom_fields by field name (dates as YYYY-MM-DD, empty values null).
+ * sends to. A subscriber row has email, name, status, joined_at (Unix
+ * seconds) and custom_fields by field name (dates as YYYY-MM-DD, empty values
+ * null).
  */
 final class Subscribers
 {
@@ -31,7 +31,6 @@ final class Subscribers
      *     listId: string,
      *     email: string,
      *     name?: string,
-     *     phone?: string,
      *     country?: string,
      *     ipAddress?: string,
      *     referrer?: string,
@@ -39,8 +38,6 @@ final class Subscribers
      *     silent?: bool,
      *     fields?: array<string, string>,
      * } $params
-     *     - phone: mobile number for SMS. The server ignores one it cannot
-     *       read, rather than failing the signup.
      *     - country: two-letter ISO 3166-1 code, e.g. NG.
      *     - gdpr: record GDPR consent for an EU signup.
      *     - silent: add to a double opt-in list as single opt-in.
@@ -62,7 +59,7 @@ final class Subscribers
         $body['list'] = $params['listId'];
         // Switches subscribe.php from rendering an HTML page to answering in plain text.
         $body['boolean'] = 'true';
-        foreach (['name' => 'name', 'phone' => 'phone', 'country' => 'country', 'ipAddress' => 'ipaddress', 'referrer' => 'referrer'] as $param => $field) {
+        foreach (['name' => 'name', 'country' => 'country', 'ipAddress' => 'ipaddress', 'referrer' => 'referrer'] as $param => $field) {
             if (isset($params[$param])) {
                 $body[$field] = $params[$param];
             }

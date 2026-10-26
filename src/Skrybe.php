@@ -11,7 +11,6 @@ use Skrybe\Resource\Brands;
 use Skrybe\Resource\Campaigns;
 use Skrybe\Resource\Emails;
 use Skrybe\Resource\Lists;
-use Skrybe\Resource\Sms;
 use Skrybe\Resource\Stats;
 use Skrybe\Resource\Subscribers;
 use Skrybe\Resource\Templates;
@@ -33,7 +32,6 @@ final class Skrybe implements LoggerAwareInterface
     public readonly Templates $templates;
     public readonly Autoresponders $autoresponders;
     public readonly Brands $brands;
-    public readonly Sms $sms;
     public readonly Stats $stats;
 
     private readonly Transport $transport;
@@ -84,7 +82,6 @@ final class Skrybe implements LoggerAwareInterface
         $this->templates = new Templates($this->transport);
         $this->autoresponders = new Autoresponders($this->transport);
         $this->brands = new Brands($this->transport);
-        $this->sms = new Sms($this->transport);
         $this->stats = new Stats($this->transport);
     }
 
