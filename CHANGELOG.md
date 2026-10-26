@@ -5,6 +5,56 @@ All notable changes to the Skrybe PHP SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [2.0.0] - 2026-10-26
+
+A rewrite covering the whole public API, in step with `@skrybe/sdk` 2.0.0 and
+`@skrybe/cli` 0.2.0. See "Upgrading from 1.x" in the README.
+
+### Added
+- A `Skrybe` client with resources: `emails`, `campaigns`, `lists`,
+  `subscribers`, `templates`, `autoresponders`, `brands`, `sms`, `stats`.
+- Campaigns: `list`/`listAll`, `get`, `stats`, `send` (with `dryRun`),
+  `testSend`, `schedule`/`unschedule`, `update`, `duplicate`, `delete`,
+  `activity`/`activityAll`.
+- Lists: `get`, `create`, `update`, `delete`, `activeSubscriberCount`, and
+  custom fields (`addCustomField`, `renameCustomField`, `deleteCustomField`).
+- Subscribers: `subscribe` (with custom fields and phone), `unsubscribe`,
+  `delete`, `status`, `list`/`listAll`.
+- Templates: `list`, `get`, `create`, `update`, `delete`.
+- Autoresponders: `list`, `get`, `emailStats`, `create`, `createEmail`.
+- SMS: `send` and `get`.
+- `brands->list()` and `stats->totalEmailsSent()`.
+- Typed exceptions under `SkrybeException`: `AuthenticationException`,
+  `InvalidRequestException`, `RateLimitException`, `ConnectionException` and
+  `ApiException`, each with a stable `getErrorCode()` and, where known, a
+  `getHint()`. Prose failures the API returns with HTTP 200 are recognised and
+  thrown.
+- `timeout`, `maxRetries` (reads only), `httpOptions` (proxy, CA bundle) and
+  `logger` options.
+
+### Changed
+- `SkrybeSDK` is now `Skrybe`, and options are passed as an array:
+  `new Skrybe($key, ['baseUrl' => ...])`.
+- Methods return parsed results and throw on failure, instead of returning
+  whatever the response body was.
+- `campaigns->create()` takes `send => true` instead of `sendCampaign => 1`.
+
+### Removed
+- `ValidationException`; missing parameters throw `InvalidRequestException`
+  with the code `missing_params`.
+- The client-side 100ms request spacing.
+
+### Fixed
+- `addSubscriber()` called `api/subscribers/add.php`, which does not exist;
+  `subscribers->subscribe()` replaces it.
+- `createCampaign()` sent list and segment ids JSON-encoded; they are
+  comma-joined, as the API expects.
+- `getLists()` threw a `TypeError` for a brand without lists, and could not
+  read list names containing quotes.
+- Request bodies, API key included, are no longer written to the logger.
+
 ## [1.1.0] - 2026-10-22
 
 ### Added

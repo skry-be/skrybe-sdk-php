@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # PHPUnit 12 needs 8.3; 8.2 is linted only.
+        php: ['8.3', '8.4', '8.5']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+      - run: composer validate --strict
+      - run: composer install --no-interaction --no-progress
+      - run: vendor/bin/phpunit
+
+  lint-8-2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+      - name: Syntax check
+        run: find src -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Load the client
+        run: |
+          composer install --no-dev --no-interaction --no-progress
+          php -r 'require "vendor/autoload.php"; new Skrybe\Skrybe("k");'
